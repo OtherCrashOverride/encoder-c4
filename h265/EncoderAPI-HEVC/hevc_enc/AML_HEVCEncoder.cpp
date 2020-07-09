@@ -50,7 +50,7 @@ static int reset_error = 0;
 #define FIOWrite(CORE, ADDR, DATA)             vdi_fio_write_register(CORE, ADDR, DATA)
 #define FIORead(CORE, ADDR)                        vdi_fio_read_register(CORE, ADDR)
 
-#define SUPPORT_SCALE 1
+#define SUPPORT_SCALE 0
 extern s32 vdi_init(u32 core_idx);
 extern s32 vdi_release(u32 core_idx);
 
@@ -1671,6 +1671,7 @@ AMVEnc_Status Wave4VpuEncFiniSeq(AMVHEVCEncHandle *Handle) {
     return AMVENC_SUCCESS;
 }
 
+#if SUPPORT_SCALE
 AMVEnc_Status ge2d_colorFormat(AMVEncFrameFmt format) {
     switch (format) {
         case AMVENC_RGB888:
@@ -1686,6 +1687,7 @@ AMVEnc_Status ge2d_colorFormat(AMVEncFrameFmt format) {
             return AMVENC_FAIL;
     }
 }
+#endif
 
 AMVEnc_Status AML_HEVCInitialize(AMVHEVCEncHandle *Handle, AMVHEVCEncParams *encParam, bool* has_mix, int force_mode) {
     AMVEnc_Status ret;
@@ -1762,16 +1764,17 @@ AMVEnc_Status AML_HEVCSetInput(AMVHEVCEncHandle *Handle, AMVHEVCEncFrameIO *inpu
     Handle->op_flag = input->op_flag;
     Handle->fmt = input->fmt;
     if (Handle->fmt != AMVENC_NV12 && Handle->fmt != AMVENC_NV21 && Handle->fmt != AMVENC_YUV420) {
-        if (INIT_GE2D) {
 #if SUPPORT_SCALE
+        if (INIT_GE2D) {
             if (ge2d_colorFormat(Handle->fmt) == AMVENC_SUCCESS) {
                 VLOG(DEBUG, "The %d of color format that HEVC need ge2d to change!", Handle->fmt);
-            } else
-#endif
-            {
+            } else {
                 return AMVENC_NOT_SUPPORTED;
             }
         }
+#else
+        return AMVENC_NOT_SUPPORTED;
+#endif
     }
     if (Handle->fmt == AMVENC_NV12) {
         Handle->mUvSwap = 0;

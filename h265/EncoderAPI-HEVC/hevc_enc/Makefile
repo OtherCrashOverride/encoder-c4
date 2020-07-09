@@ -1,7 +1,7 @@
 CFLAGS +=-O2 -fPIC
 CFLAGS += -g
 LDFLAGS += -lm -lrt -shared
-LDFLAGS += -lge2d
+#LDFLAGS += -lge2d
 
 SUFFIXES += .d
 NODEPS := clean distclean
